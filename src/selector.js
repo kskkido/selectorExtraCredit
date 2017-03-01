@@ -19,6 +19,25 @@ var traverseDomAndCollectElements = function(matchFunc, startEl) {
 
 var selectorTypeMatcher = function(selector) {
   // your code here
+  var firstChar = selector.charAt(0); 
+  if(firstChar === '#'){
+    return 'id';
+  }
+  if(firstChar === '.'){
+    return 'class';
+  }
+  var containsPeriodNotFirst = false;
+  for(var i = 1; i<selector.length - 1; i++){
+    var currChar = selector[i];
+    if(currChar === '.'){
+      containsPeriodNotFirst = true;
+      break;
+    }
+  }
+  if(containsPeriodNotFirst){
+    return 'tag.class';
+  }
+  return 'tag';
 };
 
 
