@@ -34,9 +34,15 @@ var selectorTypeMatcher = function(selector) {
   if(firstChar === '#'){
     return 'id';
   }
+
   if(firstChar === '.'){
     return 'class';
   }
+
+  if (selector.indexOf(">")> -1) {
+    return "selector hierarchy"
+  }
+
   var containsPeriodNotFirst = false;
   for(var i = 1; i<selector.length - 1; i++){
     var currChar = selector[i];

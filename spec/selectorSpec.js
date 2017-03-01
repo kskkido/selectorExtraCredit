@@ -18,6 +18,12 @@ describe("selectorTypeMatcher", function() {
     var type = selectorTypeMatcher('div');
     expect(type).toEqual("tag");
   });
+
+  it("should return the 'selector hierarchy' type for a selector hiearchy selector", function() {
+    var type = selectorTypeMatcher('div > img');
+    expect(type).toEqual("selector hierarchy");
+  });
+
 });
 
 describe("matchFunctionMaker", function() {
@@ -134,3 +140,5 @@ describe("$ selector function", function() {
   });
   
 });
+
+
