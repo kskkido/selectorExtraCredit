@@ -5,14 +5,25 @@ var traverseDomAndCollectElements = function(matchFunc, startEl) {
     startEl = document.body;
   }
 
+
   // traverse the DOM tree and collect matching elements in resultSet
   // use matchFunc to identify matching elements
 
   // YOUR CODE HERE
+  traverse(matchFunc, startEl, resultSet);
 
   return resultSet;
 };
 
+function traverse(matchFunc, currElement, resultSet){
+  if(matchFunc(currElement)){
+    resultSet.push(currElement);
+  }
+  for(var i = 0; i<currElement.children.length; i++){
+    var currChild = currElement.children[i];
+    traverse(matchFunc, currChild, resultSet);
+  }
+}
 
 // detect and return the type of selector
 // return one of these types: id, class, tag.class, tag
