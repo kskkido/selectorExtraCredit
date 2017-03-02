@@ -39,7 +39,7 @@ var selectorTypeMatcher = function(selector) {
     return 'class';
   }
 
-  if (selector.indexOf(">")> -1) {
+  if (selector.indexOf(">")> -1 || selector.indexOf(" ")> -1) {
     return "selector hierarchy"
   }
 
@@ -66,6 +66,117 @@ var selectorTypeMatcher = function(selector) {
 var matchFunctionMaker = function(selector) {
   var selectorType = selectorTypeMatcher(selector);
   var matchFunction;
+
+  if (selectorType === "selector hierarchy") {
+    
+    matchFunction = function (element) {
+      
+      var directChildOnly = false
+      var selectorList = selector.split(" ")
+    //recursion by checking every last two selectors. moves on only if the first set is true
+    // first return a set and then push off the first element or first two if > and call the remainder, if all true, return true
+    // sample: div div > p, current [div > p], next recursion should be [div div]
+      var set = [selectorList.pop()]
+      if (selectorList[selectorList.length-1] == ">") {
+        directChildOnly = true
+        set.unshift(selectorList.pop())
+      }
+      set.unshift(selectorList[selectorList.length-1])
+
+      // currently set = [div > p] and selectorList = [div, >, p]
+      var childSelector = set[set.length-1]
+      var parentSelector = set[0]
+
+      var childMatcher = matchFunctionMaker(childSelector)
+      var parentMatcher = matchFunctionMaker(parentSelector)
+      var parentElement = element.parentNode
+      // create a function that checks whether that compares an element to the child selector
+      if (childMatcher(element) && parentElement) { //element will always be the child
+
+        if(directChildOnly) { // if > and parent node does not match, return false
+          if (!parentMatcher(parentElement)) return false
+          else {
+            if (selectorList.length > 1){
+            var nextSet = selectorList.join(" ")
+            var recursiveMatch = matchFunctionMaker(nextSet)
+            return recursiveMatch(parentElement)
+            }
+            else {
+              console.log(element, parentElement)
+              return true;
+            }
+          }
+        }
+
+        else { //meaning search includes indirect child, traverse down the child, jk we go up
+          var current = parentElement
+          var check = false
+          while(current) {
+            // if (current === this) return false
+            if(parentMatcher(current)){
+              check = true;
+              break
+            }
+            current = current.parentNode
+          }
+          if(!check) {
+            return false
+          }
+          else{
+            if(selectorList.length > 1) {
+              var nextSet = selectorList.join(" ")
+              var recursiveMatch = matchFunctionMaker(nextSet)
+              return recursiveMatch(current)
+            }
+            else return true;
+          }
+        }
+
+      } else return false
+    }
+  }
+
+
+  //     for (var i = selectorList.length-1; i>0 ;i--) {
+  //       if(selectorList[i] == ">") continue
+
+
+  //       var currentSelector = selectorList[i]
+  //       var parentSelector
+
+  //       if (selectorList[i-1] === ">") {
+  //         directChildOnly = !directChildOnly 
+  //         parentSelector = selectorList[i-2] 
+  //       } else {
+  //         directChildOnly = false; 
+  //         parentSelector = selectorList[i-1]
+  //       }
+  
+  //       var childMatcher = matchFunctionMaker(currentSelector)
+  //       var parentMatcher = matchFunctionMaker(parentSelector)
+
+  //       if (childMatcher(element)) {// if element equals the child level of selector hierarchy
+  //         if (directChildOnly) {
+  //           if(!parentMatcher(element.parentNode)) return false
+  //         }
+          
+  //         else {
+  //           current = element.parentNode
+  //           while(current) {
+  //             if (parentMatcher(parent)) var good = "passed"; break
+  //             current = current.parentNode
+  //           }
+  //           if(!good) return false
+  //         }
+
+  //       } 
+  //       else return false
+  //     }
+  //     return true
+  //   }
+
+  // }
+
   if (selectorType === "id") {
     matchFunction = function (element) {
       return "#" + element.id === selector
@@ -95,6 +206,7 @@ var matchFunctionMaker = function(selector) {
   } else if (selectorType === "tag") {
     // define matchFunction for tag
     matchFunction = function (element) {
+      if(!element.tagName) return false
       return element.tagName.toLowerCase() === selector
     }
     
@@ -103,8 +215,8 @@ var matchFunctionMaker = function(selector) {
 };
 
 var $ = function(selector) {
-  var elements;
-  var selectorMatchFunc = matchFunctionMaker(selector);
-  elements = traverseDomAndCollectElements(selectorMatchFunc);
-  return elements;
-};
+    var elements;
+    var selectorMatchFunc = matchFunctionMaker(selector);
+    elements = traverseDomAndCollectElements(selectorMatchFunc);
+    return elements;
+}

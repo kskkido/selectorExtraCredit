@@ -138,6 +138,11 @@ describe("$ selector function", function() {
     elements = $('h2.small');
     expect(elements.length).toEqual(2);
   });
+
+    it("should select by tag AND className", function() {
+    elements = $('div p > span a');
+    expect(elements.length).toEqual(2);
+  });
   
 });
 
